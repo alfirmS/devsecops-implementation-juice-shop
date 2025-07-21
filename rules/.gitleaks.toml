@@ -1,0 +1,18 @@
+[allowlist]
+description = "False positives in test files, mock secrets, and hardcoded JWT for unit testing."
+
+# Abaikan direktori testing seperti cypress, spec, dsb.
+paths = [
+  '''.*\.spec\.ts$''',
+  '''.*\.spec\.js$''',
+  '''^test/.*''',
+  '''^cypress/.*'''
+]
+
+# Abaikan JWT dan API key yang memang dummy untuk test
+regexes = [
+  '''eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}''',   # JWT Token
+  '''0x[a-fA-F0-9]{40,}''',                                              # Ethereum Private Key
+  '''bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=''',                            # Base64 Email Mock
+  '''IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH'''                                 # Dummy TOTP
+]

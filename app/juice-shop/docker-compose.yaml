@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  juice-shop-v1:
+    build:
+      dockerfile: Dockerfile
+    image: juice-shop:v1
+    container_name: juice-shop-v1
+    restart: always
+    networks:
+      - juice-net
+
+  juice-shop-v2:
+    build:
+      dockerfile: Dockerfile
+    image: juice-shop:v2
+    container_name: juice-shop-v2
+    restart: always
+    networks:
+      - juice-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - juice-shop-v1
+      - juice-shop-v2
+    networks:
+      - juice-net
+
+networks:
+  juice-net:
+    driver: bridge
