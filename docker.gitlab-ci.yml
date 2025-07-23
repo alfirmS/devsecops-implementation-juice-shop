@@ -1,0 +1,55 @@
+stages:
+  - sast
+  # - iac
+  - build
+  - deploy
+  - dast
+
+semgrep:
+  stage: sast
+  tags:
+    - local-computer
+  script:
+    - cd app/juice-shop
+    - semgrep scan --config=auto --config=p/owasp-top-ten --config=p/security-audit --config=p/cwe-top-25 --sarif --sarif-output=$CI_PROJECT_DIR/report/semgrep-results.sarif --severity=ERROR --severity=WARNING --verbose
+  artifacts:
+    paths:
+      - "$CI_PROJECT_DIR/report/*.sarif"
+
+gitleaks:
+  stage: sast
+  tags:
+    - local-computer
+  script:
+    - cd app/juice-shop
+    - ls -lah ../../
+    - whoami
+    - gitleaks detect -c $CI_PROJECT_DIR/rules/.gitleaks.toml --source . --log-opts="--all" --verbose -f sarif -r $CI_PROJECT_DIR/report/gitleaks-results.sarif
+  artifacts:
+    paths:
+      - "$CI_PROJECT_DIR/report/*.sarif"
+
+build:
+  stage: build
+  tags:
+    - local-computer
+  script:
+    - cd app/juice-shop
+    - docker compose build
+
+deploy:
+  stage: deploy
+  tags:
+    - local-computer
+  script:
+    - cd app/juice-shop
+    - docker compose up -d
+
+zap:
+  stage: dast
+  image: owasp/zap2docker-stable
+  script:
+    - zap-baseline.py -t http://localhost -r "$CI_PROJECT_DIR/report/zap-report.html"
+  artifacts:
+    paths:
+      - "$CI_PROJECT_DIR/report/*.html"
